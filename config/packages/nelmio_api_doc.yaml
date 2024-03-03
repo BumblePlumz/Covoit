@@ -1,0 +1,972 @@
+---
+nelmio_api_doc:
+  areas:
+    path_patterns:
+      - ^/ville
+      - ^/voiture
+      - ^/personne
+      - ^/marque
+      - ^/inscription
+      - ^/trajet
+      # - ^/utilisateur
+  documentation:
+    info:
+      description: Une API pour gérer les trajets de covoiturage
+      title: Covoiturage
+      version: 1.0.0
+    paths:
+      # ---------------
+      # MARQUE
+      # ---------------
+      /marque/delete/{id}:
+        delete:
+          operationId: app_marque_delete
+          parameters:
+            - in: path
+              name: id
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Marque supprimée avec succès!
+            "400":
+              description: Erreur de validation
+          summary: Supprimer une marque
+          tags:
+            - Marques
+          security:
+            - BearerAuth: []
+      /marque/insert/{nom}:
+        post:
+          operationId: app_marque_insert
+          parameters:
+            - in: path
+              name: nom
+              required: true
+              schema:
+                type: string
+          requestBody:
+            content:
+              application/json:
+                schema:
+                  properties:
+                    nom:
+                      type: string
+                  type: object
+            required: true
+          responses:
+            "201":
+              description: Marque ajoutée avec succès!
+            "400":
+              description: Erreur de validation
+          summary: Insérer une marque
+          tags:
+            - Marques
+          security:
+            - BearerAuth: []
+      /marque/liste:
+        get:
+          operationId: app_marque_liste
+          responses:
+            "200":
+              content:
+                application/json:
+                  schema:
+                    items:
+                      $ref: "#/components/schemas/Marque" # Référence correcte vers le schéma "Marque"
+                    type: array
+              description: Liste des marques
+          security:
+            - X-AUTH-TOKEN:
+          summary: Liste des marques
+          tags:
+            - Marques
+      /marque/liste/voiture/{marque}:
+        get:
+          operationId: app_marque_liste_voiture
+          parameters:
+            - in: path
+              name: marque
+              required: true
+              schema:
+                type: string
+          responses:
+            "200":
+              content:
+                application/json:
+                  schema:
+                    items:
+                      properties:
+                        id:
+                          type: integer
+                        immatriculation:
+                          type: string
+                        marque:
+                          type: string
+                        modele:
+                          type: string
+                        place:
+                          type: integer
+                        propriétaire:
+                          items:
+                            properties:
+                              id:
+                                type: integer
+                              nom:
+                                type: string
+                              prenom:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+              description: Liste des voitures pour la marque
+          summary: Liste des voitures par marque
+          tags:
+            - Marques
+          security:
+            - BearerAuth: []
+      # # ---------------
+      # # Personne
+      # # ---------------
+      /personne/liste:
+        get:
+          tags:
+            - Personnes
+          summary: Liste des personnes
+          operationId: app_personne_liste
+          responses:
+            "200":
+              description: Liste des personnes
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Personne"
+          security:
+            - BearerAuth: []
+      # ---------------
+      /liste/inactif:
+        get:
+          tags:
+            - Utilisateur
+          summary: Liste des personnes inactives
+          operationId: app_personne_liste_inactif
+          responses:
+            "200":
+              description: Liste des personnes inactives
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Utilisateur"
+          security:
+            - BearerAuth: []
+      # ---------------
+      /login/{username}/{password}:
+        post:
+          tags:
+            - Utilisateur
+          summary: Connexion d'un utilisateur
+          operationId: app_personne_login
+          parameters:
+            - name: username
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: password
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Connexion réussie
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        type: integer
+      # ---------------
+      /inscription/{login}/{password}:
+        post:
+          tags:
+            - Utilisateur
+          summary: Inscription d'un utilisateur
+          operationId: app_personne_inscription
+          parameters:
+            - name: username
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: password
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "201":
+              description: Personne enregistrée avec succès!
+      # ---------------
+      /inscriptionAdmin/{login}/{password}:
+        post:
+          tags:
+            - Utilisateur
+          summary: Inscription d'un utilisateur
+          operationId: app_admin_inscription
+          parameters:
+            - name: username
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: password
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "201":
+              description: Personne enregistrée avec succès!
+      # ---------------
+      /personne/insert/{prenom}/{nom}/{tel}/{email}/{ville}/{voitureId}:
+        post:
+          tags:
+            - Personnes
+          summary: Insérer une personne
+          operationId: app_personne_insert
+          parameters:
+            - name: prenom
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: nom
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: tel
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: email
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: ville
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: voitureId
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "201":
+              description: Personne enregistrée avec succès!
+      # ---------------
+      /personne/select/{id}:
+        post:
+          tags:
+            - Personnes
+          summary: Sélectionner une personne
+          operationId: app_personne_select
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Personne trouvée avec succès!
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Personne"
+      # ---------------
+      /personne/update/{id}/{prenom}/{nom}/{tel}/{email}/{marque}/{modele}/{nbPlaces}/{immatriculation}:
+        put:
+          tags:
+            - Personnes
+          summary: Mettre à jour une personne
+          operationId: app_update_personne
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: prenom
+              in: path
+              schema:
+                type: string
+            - name: nom
+              in: path
+              schema:
+                type: string
+            - name: tel
+              in: path
+              schema:
+                type: string
+            - name: email
+              in: path
+              schema:
+                type: string
+            - name: marque
+              in: path
+              schema:
+                type: string
+            - name: modele
+              in: path
+              schema:
+                type: string
+            - name: nbPlaces
+              in: path
+              schema:
+                type: integer
+            - name: immatriculation
+              in: path
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Personne mise à jour avec succès!
+      # ---------------
+      /update-actif/{id}/{actif}:
+        put:
+          tags:
+            - Utilisateur
+          summary: Mettre à jour l'état actif d'une personne
+          operationId: app_update_personne_actif
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: isActif
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Champ isActif de la personne mis à jour avec succès!
+      # ---------------
+      /personne/delete/{id}:
+        delete:
+          tags:
+            - Personnes
+          summary: Supprimer une personne
+          operationId: app_personne_delete
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "201":
+              description: La personne a été supprimée avec succès!
+      # ---------------
+      # Voiture
+      # ---------------
+      /voiture/liste:
+        get:
+          tags:
+            - Voitures
+          summary: Liste des voitures
+          operationId: app_voiture_liste
+          responses:
+            "200":
+              description: Liste des voitures
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Voiture"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /voiture/insert/{modele}/{place}/{marqueId}/{immatriculation}:
+        post:
+          tags:
+            - Voitures
+          summary: Insérer une voiture
+          operationId: app_voiture_insert
+          parameters:
+            - name: modele
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: place
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: marqueId
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: immatriculation
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "201":
+              description: Voiture ajoutée avec succès
+      # ---------------
+      /voiture/delete/{id}:
+        delete:
+          tags:
+            - Voitures
+          summary: Supprimer une voiture
+          operationId: app_voiture_delete
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Voiture supprimée avec succès
+      # ---------------
+      # Ville
+      # ---------------
+      /ville/liste:
+        get:
+          tags:
+            - Villes
+          summary: Liste des villes
+          operationId: app_ville_liste
+          responses:
+            "200":
+              description: Liste des villes
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Ville"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /ville/listeCodePostal:
+        get:
+          tags:
+            - Villes
+          summary: Liste des codes postaux
+          operationId: app_ville_liste_code_postal
+          responses:
+            "200":
+              description: Liste des codes postaux
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      type: string
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /ville/trouver/{codePostal}:
+        post:
+          tags:
+            - Villes
+          summary: Trouver une ville par code postal
+          operationId: app_ville_trouver_codePostal
+          parameters:
+            - name: codePostal
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Ville trouvée
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Ville"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /ville/insert/{nom}/{cp}:
+        post:
+          tags:
+            - Villes
+          summary: Insérer une ville
+          operationId: app_ville_insert
+          parameters:
+            - name: nom
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: cp
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "201":
+              description: Ville ajoutée
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /ville/delete/{id}:
+        delete:
+          tags:
+            - Villes
+          summary: Supprimer une ville
+          operationId: app_ville_delete
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Ville supprimée
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      # Trajet
+      # ---------------
+      /trajet/liste:
+        get:
+          tags:
+            - Trajets
+          summary: Liste des trajets
+          operationId: app_trajet_liste
+          responses:
+            "200":
+              description: Liste des trajets
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Trajet"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /trajet/liste/{id}:
+        post:
+          tags:
+            - Trajets
+          summary: Liste des trajets par personne
+          operationId: app_trajet_liste_personne
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Liste des trajets du conducteur
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Trajet"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /trajet/recherche/{villeDepart}/{villeArriver}/{dateDepart}:
+        get:
+          tags:
+            - Trajets
+          summary: Rechercher des trajets
+          operationId: app_trajet_recherche
+          parameters:
+            - name: villeDepart
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: villeArriver
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: dateDepart
+              in: path
+              required: true
+              schema:
+                type: string
+                format: date
+          responses:
+            "200":
+              description: Trajets trouvés
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Trajet"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /trajet/insert/{kms}/{idpers}/{dateDepart}/{heureDepart}/{villeDepart}/{villeArriver}/{placesDisponible}:
+        post:
+          tags:
+            - Trajets
+          summary: Insérer un trajet
+          operationId: app_trajet_insert
+          parameters:
+            - name: kms
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: idpers
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: dateDepart
+              in: path
+              required: true
+              schema:
+                type: string
+                format: date
+            - name: heureDepart
+              in: path
+              required: true
+              schema:
+                type: string
+                format: time
+            - name: villeDepart
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: villeArriver
+              in: path
+              required: true
+              schema:
+                type: string
+            - name: placesDisponible
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Trajet ajouté
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /trajet/update-status/{id}/{status}:
+        put:
+          tags:
+            - Trajets
+          summary: Mettre à jour le statut d'un trajet
+          operationId: app_trajet_update_status
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: status
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Statut du trajet mis à jour
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /trajet/delete/{id}:
+        delete:
+          tags:
+            - Trajets
+          summary: Supprimer un trajet
+          operationId: app_trajet_delete
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Trajet supprimé
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      # Inscription
+      # ---------------
+      /inscription/:
+        get:
+          tags:
+            - Inscriptions
+          summary: Liste des inscriptions
+          operationId: app_inscription
+          responses:
+            "200":
+              description: Liste des inscriptions
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Personne"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /inscription/conducteur/{idtrajet}:
+        get:
+          tags:
+            - Inscriptions
+          summary: Le conducteur du trajet
+          operationId: app_inscription_liste_conducteur
+          parameters:
+            - name: idtrajet
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Le conducteur du trajet
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Personne"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /inscription/listePersonne/{idpers}:
+        get:
+          tags:
+            - Inscriptions
+          summary: Liste des trajets d'une personne
+          operationId: app_inscription_liste_personne
+          parameters:
+            - name: idpers
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Liste des trajets de la personne
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Trajet"
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /inscription/insert/{idpers}/{idtrajet}:
+        post:
+          tags:
+            - Inscriptions
+          summary: Insérer une inscription
+          operationId: app_insert_inscription
+          parameters:
+            - name: idpers
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: idtrajet
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Inscription réussie
+          security:
+            - X-AUTH-TOKEN: []
+      # ---------------
+      /inscription/delete/{idtrajet}:
+        delete:
+          tags:
+            - Inscriptions
+          summary: Supprimer un passager d'un trajet
+          operationId: app_delete_passager
+          parameters:
+            - name: idtrajet
+              in: path
+              required: true
+              schema:
+                type: integer
+            - name: idPassager
+              in: path
+              required: true
+              schema:
+                type: integer
+          responses:
+            "200":
+              description: Passager supprimé du trajet
+          security:
+            - X-AUTH-TOKEN: []
+        # ---------------
+    components:
+      schemas:
+        Marque:
+          type: object
+          properties:
+            id:
+              type: integer
+            nom:
+              type: string
+              maxLength: 60
+              unique: true
+            voitures:
+              type: array
+              items:
+                $ref: "#/components/schemas/Voiture"
+        Trajet:
+          type: object
+          properties:
+            id:
+              type: integer
+            kms:
+              type: integer
+              nullable: true
+            placesDisponible:
+              type: integer
+              nullable: true
+            statut:
+              type: string
+              maxLength: 255
+            departVille:
+              $ref: "#/components/schemas/Ville"
+            arriverVille:
+              $ref: "#/components/schemas/Ville"
+            passager:
+              type: array
+              items:
+                $ref: "#/components/schemas/Personne"
+            conducteur:
+              $ref: "#/components/schemas/Personne"
+            dateDepart:
+              type: string
+              format: date
+              nullable: true
+            heureDepart:
+              type: string
+              format: time
+              nullable: true
+        Ville:
+          type: object
+          properties:
+            id:
+              type: integer
+            nom:
+              type: string
+              maxLength: 255
+            codePostal:
+              type: string
+              maxLength: 5
+            personnes:
+              type: array
+              items:
+                $ref: "#/components/schemas/Personne"
+        Voiture:
+          type: object
+          properties:
+            id:
+              type: integer
+            modele:
+              type: string
+              maxLength: 60
+            place:
+              type: integer
+            immatriculation:
+              type: string
+              maxLength: 12
+            marque:
+              $ref: "#/components/schemas/Marque"
+            personnes:
+              type: array
+              items:
+                $ref: "#/components/schemas/Personne"
+        Utilisateur:
+          type: object
+          properties:
+            id:
+              type: integer
+            login:
+              type: string
+              maxLength: 180
+              unique: true
+            roles:
+              type: array
+              items:
+                type: string
+            password:
+              type: string
+            actif:
+              type: boolean
+            token:
+              type: string
+              nullable: true
+            personne:
+              $ref: "#/components/schemas/Personne"
+        Personne:
+          type: object
+          properties:
+            id:
+              type: integer
+            nom:
+              type: string
+              maxLength: 100
+            prenom:
+              type: string
+              maxLength: 100
+            tel:
+              type: string
+              maxLength: 12
+            email:
+              type: string
+              maxLength: 255
+            utilisateur:
+              $ref: '#/components/schemas/Utilisateur'
+            ville:
+              $ref: '#/components/schemas/Ville'
+            trajetsPassager:
+              type: array
+              items:
+                $ref: '#/components/schemas/Trajet'
+            voiture:
+              type: array
+              items:
+                $ref: '#/components/schemas/Voiture'
+            trajetsConducteur:
+              type: array
+              items:
+                $ref: '#/components/schemas/Trajet'
